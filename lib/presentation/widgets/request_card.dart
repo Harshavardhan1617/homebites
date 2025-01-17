@@ -13,8 +13,11 @@ class ReqCard extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage: NetworkImage(
-              'http://127.0.0.1:8090/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}'),
+          backgroundImage: user['avatar'] != null
+              ? NetworkImage(
+                  'http://127.0.0.1:8090/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}')
+              : null,
+          child: user['avatar'] == null ? Icon(Icons.person) : null,
         ),
         title: Text(user['name']),
         subtitle: Column(
@@ -22,8 +25,10 @@ class ReqCard extends StatelessWidget {
           children: [
             Text('Meal Type: ${request.data['meal_type']}'),
             Text('Vegetarian: ${request.data['vegetarian'] ? 'Yes' : 'No'}'),
-            Text(
-                'Location: ${user['location']['latitude']}, ${user['location']['longitude']}'),
+            if (user['location'] != null)
+              Text(
+                  'Location: ${user['location']['latitude']}, ${user['location']['longitude']}'),
+            if (user['location'] == null) Text('Location: Not available'),
             SizedBox(height: 10),
           ],
         ),
