@@ -39,6 +39,12 @@ class RequestsStreamController {
               _currentRequests.add(newRecord);
               _requestsController.add(_currentRequests);
               break;
+            case 'delete':
+              final deletedRecordId = e.record!.id;
+              _currentRequests
+                  .removeWhere((record) => record.id == deletedRecordId);
+              _requestsController.add(_currentRequests);
+              break;
           }
         },
       );
