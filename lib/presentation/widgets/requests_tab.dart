@@ -6,6 +6,8 @@ import 'package:pocketbase/pocketbase.dart';
 import 'request_card.dart';
 
 class RequestsTab extends StatefulWidget {
+  const RequestsTab({super.key});
+
   @override
   _RequestsTabState createState() => _RequestsTabState();
 }
@@ -41,16 +43,11 @@ class _RequestsTabState extends State<RequestsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Requests'),
-      ),
-      body: ListView.builder(
-        itemCount: requests.length,
-        itemBuilder: (context, index) {
-          return ReqCard(request: requests[index]);
-        },
-      ),
+    return ListView.builder(
+      itemCount: requests.length,
+      itemBuilder: (context, index) {
+        return ReqCard(request: requests[index]);
+      },
     );
   }
 }
