@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'request_card.dart';
-import 'package:home_bites/services/pocketbase/pbase.dart';
 
 class RequestsTab extends StatefulWidget {
   const RequestsTab({super.key});
@@ -12,13 +12,17 @@ class RequestsTab extends StatefulWidget {
   _RequestsTabState createState() => _RequestsTabState();
 }
 
-class _RequestsTabState extends State<RequestsTab>
-    with AutomaticKeepAliveClientMixin {
+class _RequestsTabState extends State<RequestsTab> {
   late PocketBaseClient pbClient;
   late StreamSubscription<List<RecordModel>> subscription;
   List<RecordModel> requests = [];
-  // Keep track of selected index as a simple int
   int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   void initState() {
@@ -44,19 +48,8 @@ class _RequestsTabState extends State<RequestsTab>
     super.dispose();
   }
 
-  void _onItemTapped(int index) {
-    // Instead of rebuilding the whole widget, only rebuild the navigation bar
-    _selectedIndex = index;
-    // Force only the navigation bar to rebuild
-    _navBarKey.currentState?.setState(() {});
-  }
-
-  // Create a global key for the navigation bar
-  final GlobalKey<State<StatefulWidget>> _navBarKey = GlobalKey();
-
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Column(
       children: [
         Expanded(
@@ -75,7 +68,7 @@ class _RequestsTabState extends State<RequestsTab>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 10,
@@ -85,9 +78,18 @@ class _RequestsTabState extends State<RequestsTab>
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: _CustomNavigationBar(
-                  key: _navBarKey,
-                  selectedIndex: _selectedIndex,
+                child: BottomNavigationBar(
+                  items: const <BottomNavigationBarItem>[
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home),
+                      label: 'Home',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.school),
+                      label: 'School',
+                    ),
+                  ],
+                  currentIndex: _selectedIndex,
                   onTap: _onItemTapped,
                 ),
               ),
@@ -95,44 +97,6 @@ class _RequestsTabState extends State<RequestsTab>
           ),
         ),
       ],
-    );
-  }
-
-  @override
-  bool get wantKeepAlive => true;
-}
-
-// Create a separate stateful widget for the navigation bar
-class _CustomNavigationBar extends StatefulWidget {
-  final int selectedIndex;
-  final ValueChanged<int> onTap;
-
-  const _CustomNavigationBar({
-    Key? key,
-    required this.selectedIndex,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  State<_CustomNavigationBar> createState() => _CustomNavigationBarState();
-}
-
-class _CustomNavigationBarState extends State<_CustomNavigationBar> {
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.school),
-          label: 'School',
-        ),
-      ],
-      currentIndex: widget.selectedIndex,
-      onTap: widget.onTap,
     );
   }
 }
