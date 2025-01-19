@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:pocketbase/pocketbase.dart';
-import 'request_card.dart';
+import '../Components/request_card.dart';
 
 class RequestsTab extends StatefulWidget {
   const RequestsTab({super.key});
