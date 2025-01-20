@@ -10,6 +10,47 @@ class PocketBaseClient {
     requestsStreamController = RequestsStreamController(pb: pb);
   }
 
+  // Authenticate user using mobile number and password
+  Future<void> authenticate(String mobileNumber, String password) async {
+    try {
+      final authData =
+          await pb.collection('users').authWithPassword(mobileNumber, password);
+      print('Authenticated: ${authData.token}');
+      print(pb.authStore.isValid);
+      print(pb.authStore.token);
+      print(pb.authStore.record?.id);
+    } catch (e) {
+      print('Error authenticating: $e');
+    }
+  }
+
+  // Register user
+  Future<void> register(
+      String mobileNumber, String password, String name) async {
+    try {
+      final body = {
+        'mobile_number': mobileNumber,
+        'password': password,
+        'passwordConfirm': password,
+        'name': name,
+      };
+      final record = await pb.collection('users').create(body: body);
+      print('Registered: ${record.id}');
+    } catch (e) {
+      print('Error registering: $e');
+    }
+  }
+
+  // Logout user
+  Future<void> logout() async {
+    try {
+      pb.authStore.clear();
+      print('Logged out');
+    } catch (e) {
+      print('Error logging out: $e');
+    }
+  }
+
   // get live requests stream
   Stream<List<RecordModel>> getLiveRequests() {
     return requestsStreamController.requestsStream;
