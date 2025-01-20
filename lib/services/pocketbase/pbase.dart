@@ -51,6 +51,27 @@ class PocketBaseClient {
     }
   }
 
+  //check auth status and return boolean
+  bool checkAuth() {
+    try {
+      final bool isAuthenticated = pb.authStore.isValid;
+      return isAuthenticated;
+    } catch (e) {
+      print('Error checking auth status: $e');
+      return false;
+    }
+  }
+
+  // Create a new request
+  Future<void> createRequest(Map<String, dynamic> data) async {
+    try {
+      final record = await pb.collection('requests').create(body: data);
+      print('Request created: ${record.id}');
+    } catch (e) {
+      print('Error creating request: $e');
+    }
+  }
+
   // get live requests stream
   Stream<List<RecordModel>> getLiveRequests() {
     return requestsStreamController.requestsStream;
