@@ -1,55 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:home_bites/presentation/screens/Home/home_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final PocketBaseClient pbClient = PocketBaseClient();
+  final TextEditingController mobileNumberController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  Future<void> _login() async {
+    final mobileNumber = mobileNumberController.text;
+    final password = passwordController.text;
+
+    await pbClient.authenticate(mobileNumber, password);
+
+    if (pbClient.checkAuth()) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      // Handle authentication failure
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed. Please try again.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-        body: Center(
-      //login form
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            alignment: Alignment.center,
-            margin: EdgeInsets.all(20),
-            width: size.width * 0.8,
-            child: TextField(
-              decoration: InputDecoration(
-                  hintText: 'Email',
-                  icon: Icon(Icons.email),
+      appBar: AppBar(
+        title: Text('Login'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              alignment: Alignment.center,
+              margin: EdgeInsets.all(20),
+              width: size.width * 0.8,
+              child: TextField(
+                controller: mobileNumberController,
+                decoration: InputDecoration(
+                  hintText: 'Mobile Number',
+                  icon: Icon(Icons.phone),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20))),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
             ),
-          ),
-          Container(
-            alignment: Alignment.center,
-            margin: EdgeInsets.all(20),
-            width: size.width * 0.8,
-            child: TextField(
-              obscureText: true,
-              decoration: InputDecoration(
+            Container(
+              alignment: Alignment.center,
+              margin: EdgeInsets.all(20),
+              width: size.width * 0.8,
+              child: TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
                   hintText: 'Password',
                   icon: Icon(Icons.lock),
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20))),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
             ),
-          ),
-          Container(
-            alignment: Alignment.center,
-            margin: EdgeInsets.all(20),
-            width: size.width * 0.8,
-            child: ElevatedButton(
-              onPressed: () {
-                //login action
-              },
-              child: Text('Login'),
+            Container(
+              alignment: Alignment.center,
+              margin: EdgeInsets.all(20),
+              width: size.width * 0.8,
+              child: ElevatedButton(
+                onPressed: _login,
+                child: Text('Login'),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ));
+    );
   }
 }
