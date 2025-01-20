@@ -12,13 +12,13 @@ class PocketBaseClient {
 
   // Authenticate user using mobile number and password
   Future<void> authenticate(String mobileNumber, String password) async {
+    // add +91 prefix to mobile number if not present
+    mobileNumber =
+        mobileNumber.startsWith('+91') ? mobileNumber : '+91 ${mobileNumber}';
     try {
       final authData =
           await pb.collection('users').authWithPassword(mobileNumber, password);
-      print('Authenticated: ${authData.token}');
-      print(pb.authStore.isValid);
-      print(pb.authStore.token);
-      print(pb.authStore.record?.id);
+      print('Authenticated: ${authData}');
     } catch (e) {
       print('Error authenticating: $e');
     }
@@ -29,7 +29,11 @@ class PocketBaseClient {
       String mobileNumber, String password, String name) async {
     try {
       final body = {
-        'mobile_number': mobileNumber,
+        //modify mobile number such that it is in the format +91 xxxxxxxxxx when the recieved string dont have the +91 prefix
+        'mobile_number': mobileNumber.startsWith('+91')
+            ? mobileNumber
+            : '+91 ${mobileNumber}',
+        // 'mobile_number': mobileNumber,
         'password': password,
         'passwordConfirm': password,
         'name': name,
