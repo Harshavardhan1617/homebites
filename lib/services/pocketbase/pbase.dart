@@ -3,10 +3,13 @@ import 'rt_to_stream.dart';
 
 class PocketBaseClient {
   final PocketBase pb;
-  late RequestsStreamController requestsStreamController;
+  RequestsStreamController? requestsStreamController;
 
   PocketBaseClient({String baseUrl = 'http://127.0.0.1:8090'})
-      : pb = PocketBase(baseUrl) {
+      : pb = PocketBase(baseUrl);
+
+  // Initialize the RequestsStreamController
+  void initializeRequestsStreamController() {
     requestsStreamController = RequestsStreamController(pb: pb);
   }
 
@@ -14,7 +17,7 @@ class PocketBaseClient {
   Future<void> authenticate(String mobileNumber, String password) async {
     // add +91 prefix to mobile number if not present
     mobileNumber =
-        mobileNumber.startsWith('+91') ? mobileNumber : '+91 ${mobileNumber}';
+        mobileNumber.startsWith('+91') ? mobileNumber : '+91 $mobileNumber';
     try {
       final authData =
           await pb.collection('users').authWithPassword(mobileNumber, password);
@@ -55,7 +58,7 @@ class PocketBaseClient {
     }
   }
 
-  //check auth status and return boolean
+  // Check auth status and return boolean
   bool checkAuth() {
     try {
       final bool isAuthenticated = pb.authStore.isValid;
@@ -76,13 +79,16 @@ class PocketBaseClient {
     }
   }
 
-  // get live requests stream
+  // Get live requests stream
   Stream<List<RecordModel>> getLiveRequests() {
-    return requestsStreamController.requestsStream;
+    if (requestsStreamController == null) {
+      throw Exception('RequestsStreamController is not initialized.');
+    }
+    return requestsStreamController!.requestsStream;
   }
 
   // Dispose the stream controller
   void dispose() {
-    requestsStreamController.dispose();
+    requestsStreamController?.dispose();
   }
 }
