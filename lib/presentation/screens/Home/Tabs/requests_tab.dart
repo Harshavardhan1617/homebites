@@ -28,6 +28,7 @@ class _RequestsTabState extends State<RequestsTab> {
   void initState() {
     super.initState();
     pbClient = PocketBaseClient(baseUrl: 'http://127.0.0.1:8090');
+    pbClient.initializeRequestsStreamController();
 
     subscription = pbClient.getLiveRequests().listen(
       (records) {
