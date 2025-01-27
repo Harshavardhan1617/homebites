@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:provider/provider.dart';
-import 'package:home_bites/presentation/providers/pocketbaseprovide.dart';
 import 'package:home_bites/presentation/screens/Home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,10 +19,10 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text;
 
     final pocketBaseProvider =
-        Provider.of<PocketBaseProvider>(context, listen: false);
-    await pocketBaseProvider.authenticate(mobileNumber, password);
+        Provider.of<PocketBaseService>(context, listen: false);
+    await pocketBaseProvider.signIn(mobileNumber, password);
 
-    if (pocketBaseProvider.checkAuth()) {
+    if (pocketBaseProvider.isAuthenticated) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),

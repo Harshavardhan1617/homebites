@@ -1,9 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:home_bites/presentation/providers/pocketbaseprovide.dart';
+import 'package:home_bites/presentation/screens/Home/Components/request_card.dart';
+import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:home_bites/services/pocketbase/stream.dart';
 import 'package:pocketbase/pocketbase.dart';
-import '../Components/request_card.dart';
+import 'package:provider/provider.dart';
 
 class RequestsTab extends StatefulWidget {
   const RequestsTab({super.key});
@@ -13,6 +14,7 @@ class RequestsTab extends StatefulWidget {
 }
 
 class _RequestsTabState extends State<RequestsTab> {
+  late RequestsStreamController streamController;
   late StreamSubscription<List<RecordModel>> subscription;
   List<RecordModel> requests = [];
   int _selectedIndex = 0;
@@ -26,10 +28,16 @@ class _RequestsTabState extends State<RequestsTab> {
   @override
   void initState() {
     super.initState();
-    final PocketBaseProvider pbClient = PocketBaseProvider();
 
-    pbClient.initializeRequestsStreamController();
-    subscription = pbClient.getLiveRequests().listen(
+    // Get PocketBaseService from the provider
+    final PocketBaseService pbClient =
+        Provider.of<PocketBaseService>(context, listen: false);
+
+    // Initialize the stream controller
+    streamController = RequestsStreamController(pb: pbClient.pb);
+
+    // Subscribe to the stream
+    subscription = streamController.requestsStream.listen(
       (records) {
         setState(() {
           requests = records;
@@ -43,7 +51,9 @@ class _RequestsTabState extends State<RequestsTab> {
 
   @override
   void dispose() {
+    // Cancel the subscription and dispose of the stream controller
     subscription.cancel();
+    streamController.dispose();
     super.dispose();
   }
 

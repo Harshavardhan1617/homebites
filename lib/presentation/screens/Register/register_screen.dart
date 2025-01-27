@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:provider/provider.dart';
 import 'package:home_bites/presentation/screens/Home/home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -10,7 +11,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final PocketBaseClient pbClient = PocketBaseClient();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
@@ -20,12 +20,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final password = passwordController.text;
     final name = nameController.text;
 
-    await pbClient.register(mobileNumber, password, name);
-    //delay to allow the user to be registered before authenticating
-    await Future.delayed(Duration(milliseconds: 500));
-    await pbClient.authenticate(mobileNumber, password);
+    final pocketBaseProvider =
+        Provider.of<PocketBaseService>(context, listen: false);
+    await pocketBaseProvider.signUp(
+        mobile: mobileNumber, password: password, name: name);
+    await pocketBaseProvider.signIn(mobileNumber, password);
 
-    if (pbClient.checkAuth()) {
+    if (pocketBaseProvider.isAuthenticated) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
