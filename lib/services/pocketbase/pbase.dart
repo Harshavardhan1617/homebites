@@ -8,7 +8,7 @@ class PocketBaseService {
 
   // Auth Methods
   Future<RecordAuth> signIn(String mobile, String password) async {
-    final formattedMobile = mobile.startsWith('+91') ? mobile : '+91$mobile';
+    final formattedMobile = mobile.startsWith('+91') ? mobile : '+91 $mobile';
     return await pb.collection('users').authWithPassword(
           formattedMobile,
           password,
@@ -20,7 +20,7 @@ class PocketBaseService {
     required String password,
     required String name,
   }) async {
-    final formattedMobile = mobile.startsWith('+91') ? mobile : '+91$mobile';
+    final formattedMobile = mobile.startsWith('+91') ? mobile : '+91 $mobile';
     return await pb.collection('users').create(body: {
       'mobile_number': formattedMobile,
       'password': password,
