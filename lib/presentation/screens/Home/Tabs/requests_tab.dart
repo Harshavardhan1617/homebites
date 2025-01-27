@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:home_bites/presentation/providers/pocketbaseprovide.dart';
 import 'package:pocketbase/pocketbase.dart';
 import '../Components/request_card.dart';
 
@@ -13,7 +13,6 @@ class RequestsTab extends StatefulWidget {
 }
 
 class _RequestsTabState extends State<RequestsTab> {
-  late PocketBaseClient pbClient;
   late StreamSubscription<List<RecordModel>> subscription;
   List<RecordModel> requests = [];
   int _selectedIndex = 0;
@@ -27,9 +26,9 @@ class _RequestsTabState extends State<RequestsTab> {
   @override
   void initState() {
     super.initState();
-    pbClient = PocketBaseClient(baseUrl: 'http://127.0.0.1:8090');
-    pbClient.initializeRequestsStreamController();
+    final PocketBaseProvider pbClient = PocketBaseProvider();
 
+    pbClient.initializeRequestsStreamController();
     subscription = pbClient.getLiveRequests().listen(
       (records) {
         setState(() {
@@ -45,7 +44,6 @@ class _RequestsTabState extends State<RequestsTab> {
   @override
   void dispose() {
     subscription.cancel();
-    pbClient.dispose();
     super.dispose();
   }
 
