@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:home_bites/presentation/providers/pocketbaseprovide.dart';
 import 'package:home_bites/presentation/screens/Welcome/welcome_page.dart';
+import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => PocketBaseProvider(),
+    MultiProvider(
+      providers: [
+        Provider(
+          create: (_) => PocketBaseService(),
+        ),
+      ],
       child: MyApp(),
     ),
   );
