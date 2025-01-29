@@ -1,4 +1,5 @@
 import 'package:pocketbase/pocketbase.dart';
+import 'package:home_bites/models/request_model.dart';
 
 class PocketBaseService {
   final PocketBase pb;
@@ -35,8 +36,8 @@ class PocketBaseService {
   bool get isAuthenticated => pb.authStore.isValid;
 
   // Request Methods
-  Future<RecordModel> createRequest(Map<String, dynamic> data) async {
-    return await pb.collection('requests').create(body: data);
+  Future<RecordModel> createRequest(RequestModel request) async {
+    return await pb.collection('requests').create(body: request.toJson());
   }
 
   Future<List<RecordModel>> getRequests() async {
