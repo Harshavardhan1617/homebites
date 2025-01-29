@@ -30,6 +30,7 @@ class RequestsStreamController {
   Future<void> _subscribeToChanges() async {
     try {
       _unsubscribe = await pb.collection('requests').subscribe(
+        expand: 'requested_user',
         '*',
         (e) {
           switch (e.action) {

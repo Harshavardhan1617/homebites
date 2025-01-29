@@ -1,4 +1,4 @@
-import 'package:home_bites/services/pocketbase/stream.dart';
+import 'package:home_bites/services/pocketbase/pocketbase_stream.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class RequestsStreamControllerFactory {
