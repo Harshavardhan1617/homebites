@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:home_bites/presentation/screens/Forms/requests_form.dart';
 import 'package:home_bites/presentation/screens/Home/Components/request_card.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:home_bites/services/pocketbase/stream.dart';
@@ -20,9 +21,16 @@ class _RequestsTabState extends State<RequestsTab> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 0) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RequestsForm()),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
