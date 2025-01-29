@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:home_bites/models/request_model.dart';
+import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:provider/provider.dart';
 
 class RequestsForm extends StatefulWidget {
   const RequestsForm({super.key});
@@ -60,9 +63,24 @@ class _RequestsFormState extends State<RequestsForm> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    // Process the form data
+                    final PocketBaseService pbService =
+                        Provider.of<PocketBaseService>(context, listen: false);
+                    if (pbService.pb.authStore.record != null) {
+                      final request = RequestModel(
+                        mealType: _mealType,
+                        requestedUser: pbService.pb.authStore.record!.id,
+                        vegetarian: _isVegetarian,
+                        textNote: _note,
+                      );
+                      await pbService.createRequest(request);
+                      Navigator.pop(context);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('User is not authenticated')),
+                      );
+                    }
                   }
                 },
                 child: Text('Submit'),
