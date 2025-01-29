@@ -3,8 +3,9 @@ import 'package:pocketbase/pocketbase.dart';
 class PocketBaseService {
   final PocketBase pb;
 
-  PocketBaseService({String baseUrl = 'http://127.0.0.1:8090'})
-      : pb = PocketBase(baseUrl);
+  PocketBaseService(
+      {String baseUrl = 'http://127.0.0.1:8090', required AuthStore store})
+      : pb = PocketBase(baseUrl, authStore: store);
 
   // Auth Methods
   Future<RecordAuth> signIn(String mobile, String password) async {
