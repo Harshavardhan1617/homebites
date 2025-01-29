@@ -2,15 +2,15 @@ class RequestModel {
   final String mealType;
   final String requestedUser;
   final bool vegetarian;
-  final bool active;
-  final String textNote;
+  final bool? active;
+  final String? textNote;
 
   RequestModel({
     required String mealType,
     required this.requestedUser,
     required this.vegetarian,
-    required this.active,
-    required this.textNote,
+    this.active,
+    this.textNote,
   }) : mealType = mealType.toLowerCase();
 
   factory RequestModel.fromJson(Map<String, dynamic> json) {
