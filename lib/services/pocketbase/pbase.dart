@@ -35,6 +35,18 @@ class PocketBaseService {
 
   bool get isAuthenticated => pb.authStore.isValid;
 
+  Future<bool> checkAuthStatus() async {
+    try {
+      await pb
+          .collection('users')
+          .authRefresh(); // Refreshes and verifies token
+      return true;
+    } catch (e) {
+      print('Auth Check Failed: $e');
+      return false;
+    }
+  }
+
   // Request Methods
   Future<RecordModel> createRequest(RequestModel request) async {
     return await pb.collection('requests').create(body: request.toJson());

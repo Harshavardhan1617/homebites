@@ -39,19 +39,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String authStatus =
-        Provider.of<PocketBaseService>(context).isAuthenticated
-            ? 'Authenticated'
-            : 'Not Authenticated';
-
-    print('Auth Status: $authStatus');
-    return MaterialApp(
-      title: 'Home Bites',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: authStatus == 'Authenticated' ? HomeScreen() : WelcomePage(),
+    return FutureBuilder<bool>(
+      future: Provider.of<PocketBaseService>(context).checkAuthStatus(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final isAuthenticated = snapshot.data ?? false;
+        return MaterialApp(
+          title: 'Home Bites',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+          ),
+          home: isAuthenticated ? HomeScreen() : WelcomePage(),
+        );
+      },
     );
   }
 }
