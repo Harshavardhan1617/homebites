@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -24,26 +26,98 @@ class _RecordCompState extends State<RecordComp> {
   bool _isRecording = false;
   String? _filePath;
   bool _isPlaying = false;
+  int _recordingTime = 0;
+  Timer? _timer;
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _recordingTime++;
+      });
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  String _formatTime(int seconds) {
+    int minutes = seconds ~/ 60;
+    int remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.sizeOf(context).width,
-      color: Colors.amber,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
-        children: <Widget>[
-          const Text(
-            'Record Component',
-            style: TextStyle(color: Colors.red),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _isRecording ? Colors.redAccent[200] : Colors.white,
+              border: Border.all(
+                color: _isRecording ? Colors.red : Colors.grey,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: _isRecording ? _stopRecording : _startRecording,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _isRecording ? Icons.stop : Icons.mic,
+                        size: 32,
+                        color: _isRecording ? Colors.red : Colors.grey[700],
+                      ),
+                      if (_isRecording || _recordingTime > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            _formatTime(_recordingTime),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  _isRecording ? Colors.red : Colors.grey[700],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-          ElevatedButton(
-            onPressed: _isRecording ? _stopRecording : _startRecording,
-            child: Text(_isRecording ? 'Stop Recording' : 'Start Recording'),
-          ),
-          if (_filePath != null)
-            ElevatedButton(
-              onPressed: _isPlaying ? null : _playRecording,
-              child: Text(_isPlaying ? 'Playing...' : 'Play Recording'),
+          if (_filePath != null && !_isRecording)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: TextButton.icon(
+                onPressed: _isPlaying ? null : _playRecording,
+                icon: Icon(_isPlaying ? Icons.volume_up : Icons.play_arrow),
+                label: Text(_isPlaying ? 'Playing...' : 'Play Recording'),
+              ),
             ),
         ],
       ),
@@ -57,7 +131,6 @@ class _RecordCompState extends State<RecordComp> {
         final randomString = _generateRandomString(10);
         final path = p.join(directory.path, '$randomString.m4a');
 
-        // Add more detailed configuration
         await _recorder.start(
           const RecordConfig(
             encoder: AudioEncoder.aacLc,
@@ -69,18 +142,24 @@ class _RecordCompState extends State<RecordComp> {
 
         setState(() {
           _isRecording = true;
+          _recordingTime = 0;
         });
-        debugPrint('Recording started: $path');
+        widget.onFileChanged(null); // Clear previous file
+        _startTimer();
       } else {
-        debugPrint('No permission to record');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No permission to record')),
+          const SnackBar(
+            content: Text('No permission to record'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
-      debugPrint('Error starting recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error starting recording: $e')),
+        SnackBar(
+          content: Text('Error starting recording: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -98,14 +177,12 @@ class _RecordCompState extends State<RecordComp> {
       setState(() {
         _isRecording = false;
       });
+      _stopTimer();
 
-      // Verify file exists and has content
       if (_filePath != null) {
         final file = File(_filePath!);
         if (await file.exists()) {
           final fileSize = await file.length();
-          debugPrint('Recording stopped. File saved at: $_filePath');
-          debugPrint('File size: $fileSize bytes');
           if (fileSize == 0) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -134,9 +211,12 @@ class _RecordCompState extends State<RecordComp> {
         }
       }
     } catch (e) {
-      debugPrint('Error stopping recording: $e');
+      widget.onFileChanged(null);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error stopping recording: $e')),
+        SnackBar(
+          content: Text('Error stopping recording: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -149,8 +229,8 @@ class _RecordCompState extends State<RecordComp> {
         });
 
         await _audioPlayer.setFilePath(_filePath!);
+        await _audioPlayer.setVolume(1.0);
 
-        // Add listener for playback state
         _audioPlayer.playerStateStream.listen((state) {
           if (state.processingState == ProcessingState.completed) {
             setState(() {
@@ -159,32 +239,31 @@ class _RecordCompState extends State<RecordComp> {
           }
         });
 
-        // Set volume to maximum
-        await _audioPlayer.setVolume(1.0);
-
         await _audioPlayer.play();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Playing recording...')),
-        );
       } catch (e) {
         setState(() {
           _isPlaying = false;
         });
-        debugPrint('Error playing recording: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error playing recording: $e')),
+          SnackBar(
+            content: Text('Error playing recording: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } else {
-      debugPrint('Recording file not found: $_filePath');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recording file not found')),
+        const SnackBar(
+          content: Text('Recording file not found'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _audioPlayer.dispose();
     _recorder.dispose();
     super.dispose();

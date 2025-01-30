@@ -3,6 +3,7 @@ import 'package:home_bites/models/request_model.dart';
 import 'package:home_bites/presentation/screens/Forms/Components/record_comp.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart';
 
 class RequestsForm extends StatefulWidget {
   const RequestsForm({super.key});
@@ -16,6 +17,52 @@ class _RequestsFormState extends State<RequestsForm> {
   String _mealType = 'Breakfast';
   bool _isVegetarian = false;
   String _note = '';
+  MultipartFile? _audioFile;
+  bool _hasRecording = false;
+
+  void _handleAudioFileChanged(MultipartFile? file) {
+    setState(() {
+      _audioFile = file;
+      _hasRecording = file != null;
+    });
+  }
+
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      final PocketBaseService pbService =
+          Provider.of<PocketBaseService>(context, listen: false);
+
+      if (pbService.pb.authStore.record == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User is not authenticated')),
+        );
+        return;
+      }
+
+      try {
+        final request = RequestModel(
+          mealType: _mealType,
+          requestedUser: pbService.pb.authStore.record!.id,
+          vegetarian: _isVegetarian,
+          textNote: _note,
+        );
+
+        await pbService.createRequest(
+          request: request,
+          file: _audioFile,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Request submitted successfully')),
+        );
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error submitting request: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +74,12 @@ class _RequestsFormState extends State<RequestsForm> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
+                children: <Widget>[
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -47,8 +94,8 @@ class _RequestsFormState extends State<RequestsForm> {
                             ),
                           ),
                           const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _mealType,
+                          DropdownButtonFormField<String>(
+                            value: _mealType,
                             decoration: const InputDecoration(
                               labelText: 'Meal Type',
                               border: OutlineInputBorder(),
@@ -57,30 +104,30 @@ class _RequestsFormState extends State<RequestsForm> {
                                 vertical: 12,
                               ),
                             ),
-                items: ['Breakfast', 'Lunch', 'Dinner']
-                    .map((meal) => DropdownMenuItem(
-                          value: meal,
-                          child: Text(meal),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _mealType = value!;
-                  });
-                },
-              ),
+                            items: ['Breakfast', 'Lunch', 'Dinner']
+                                .map((meal) => DropdownMenuItem(
+                                      value: meal,
+                                      child: Text(meal),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _mealType = value!;
+                              });
+                            },
+                          ),
                           const SizedBox(height: 16),
                           SwitchListTile(
                             title: const Text('Vegetarian'),
                             subtitle:
                                 const Text('Request vegetarian options only'),
-                value: _isVegetarian,
-                onChanged: (value) {
-                  setState(() {
+                            value: _isVegetarian,
+                            onChanged: (value) {
+                              setState(() {
                                 _isVegetarian = value;
-                  });
-                },
-              ),
+                              });
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -100,7 +147,7 @@ class _RequestsFormState extends State<RequestsForm> {
                             ),
                           ),
                           const SizedBox(height: 16),
-              TextFormField(
+                          TextFormField(
                             decoration: const InputDecoration(
                               hintText: 'Add any special instructions...',
                               border: OutlineInputBorder(),
@@ -109,13 +156,13 @@ class _RequestsFormState extends State<RequestsForm> {
                                 vertical: 12,
                               ),
                             ),
-                maxLines: 3,
-                onChanged: (value) {
-                  setState(() {
-                    _note = value;
-                  });
-                },
-              ),
+                            maxLines: 3,
+                            onChanged: (value) {
+                              setState(() {
+                                _note = value;
+                              });
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -155,7 +202,7 @@ class _RequestsFormState extends State<RequestsForm> {
                     ),
                   ),
                   const SizedBox(height: 24),
-              ElevatedButton(
+                  ElevatedButton(
                     onPressed: _submitForm,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -167,8 +214,8 @@ class _RequestsFormState extends State<RequestsForm> {
                       'Submit Request',
                       style: TextStyle(fontSize: 16),
                     ),
-              ),
-            ],
+                  ),
+                ],
               ),
             ),
           ),
