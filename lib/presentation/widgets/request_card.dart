@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:home_bites/constants.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class ReqCard extends StatelessWidget {
@@ -15,7 +16,7 @@ class ReqCard extends StatelessWidget {
         leading: CircleAvatar(
           backgroundImage: user['avatar'] != null
               ? NetworkImage(
-                  'http://127.0.0.1:8090/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}')
+                  '$kPocketbaseHostUrl/api/files/${user['collectionId']}/${user['id']}/${user['avatar']}')
               : null,
           child: user['avatar'] == null ? Icon(Icons.person) : null,
         ),

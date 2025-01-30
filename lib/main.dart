@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:home_bites/constants.dart';
 import 'package:home_bites/presentation/screens/Home/home_screen.dart';
 import 'package:home_bites/presentation/screens/Welcome/welcome_page.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
@@ -26,7 +27,8 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         Provider(
-          create: (_) => PocketBaseService(store: store),
+          create: (_) =>
+              PocketBaseService(store: store, baseUrl: kPocketbaseHostUrl),
         ),
       ],
       child: MyApp(),
