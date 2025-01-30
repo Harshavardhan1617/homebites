@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:home_bites/models/request_model.dart';
+import 'package:home_bites/presentation/screens/Forms/Components/record_comp.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:provider/provider.dart';
 
@@ -62,6 +63,7 @@ class _RequestsFormState extends State<RequestsForm> {
                 },
               ),
               SizedBox(height: 20),
+              RecordComp(),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -74,7 +76,7 @@ class _RequestsFormState extends State<RequestsForm> {
                         vegetarian: _isVegetarian,
                         textNote: _note,
                       );
-                      await pbService.createRequest(request);
+                      await pbService.createRequest(request: request);
                       Navigator.pop(context);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
