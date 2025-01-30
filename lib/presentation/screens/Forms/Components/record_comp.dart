@@ -7,7 +7,12 @@ import 'dart:math';
 import 'dart:io';
 
 class RecordComp extends StatefulWidget {
-  const RecordComp({super.key});
+  final Function(MultipartFile?) onFileChanged;
+
+  const RecordComp({
+    super.key,
+    required this.onFileChanged,
+  });
 
   @override
   State<RecordComp> createState() => _RecordCompState();
@@ -102,10 +107,30 @@ class _RecordCompState extends State<RecordComp> {
           debugPrint('Recording stopped. File saved at: $_filePath');
           debugPrint('File size: $fileSize bytes');
           if (fileSize == 0) {
-            debugPrint('Warning: File is empty!');
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Recording failed: Empty file'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            widget.onFileChanged(null);
+          } else {
+            // Convert File to MultipartFile
+            final bytes = await file.readAsBytes();
+            final multipartFile = MultipartFile.fromBytes(
+              'audio_note',
+              bytes,
+              filename: 'audio_note.m4a',
+            );
+            widget.onFileChanged(multipartFile);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Recording saved successfully'),
+                backgroundColor: Colors.green,
+              ),
+            );
           }
-        } else {
-          debugPrint('Error: File does not exist after recording!');
         }
       }
     } catch (e) {
