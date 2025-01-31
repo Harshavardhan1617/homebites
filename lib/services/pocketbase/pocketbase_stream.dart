@@ -18,6 +18,7 @@ class RequestsStreamController {
   Future<void> _loadInitialData() async {
     try {
       _currentRequests = await pb.collection('requests').getFullList(
+            sort: '-created',
             expand: 'requested_user',
           );
       _controller.add(_currentRequests);
