@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:http/http.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:home_bites/models/request_model.dart';
@@ -50,14 +52,17 @@ class PocketBaseService {
 
   // Request Methods
   Future<RecordModel> createRequest(
-      {required RequestModel request, MultipartFile? file}) async {
-    List<MultipartFile> files = [];
-    if (file != null) {
-      files.add(file);
-    }
+      {required RequestModel request, File? file}) async {
+    final bytes = await file!.readAsBytes();
     return await pb
         .collection('requests')
-        .create(body: request.toJson(), files: files);
+        .create(body: request.toJson(), files: [
+      MultipartFile.fromBytes(
+        'voice_note',
+        bytes,
+        filename: 'voice_note.m4a',
+      )
+    ]);
   }
 
   Future<List<RecordModel>> getRequests() async {

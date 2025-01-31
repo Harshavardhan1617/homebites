@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -9,12 +8,9 @@ import 'dart:math';
 import 'dart:io';
 
 class RecordComp extends StatefulWidget {
-  final Function(MultipartFile?) onFileChanged;
+  final Function(File?, String?) onFileChanged;
 
-  const RecordComp({
-    super.key,
-    required this.onFileChanged,
-  });
+  const RecordComp({super.key, required this.onFileChanged});
 
   @override
   State<RecordComp> createState() => _RecordCompState();
@@ -144,7 +140,7 @@ class _RecordCompState extends State<RecordComp> {
           _isRecording = true;
           _recordingTime = 0;
         });
-        widget.onFileChanged(null); // Clear previous file
+        widget.onFileChanged(null, null); // Clear previous file
         _startTimer();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,16 +186,9 @@ class _RecordCompState extends State<RecordComp> {
                 backgroundColor: Colors.red,
               ),
             );
-            widget.onFileChanged(null);
+            widget.onFileChanged(null, null);
           } else {
-            // Convert File to MultipartFile
-            final bytes = await file.readAsBytes();
-            final multipartFile = MultipartFile.fromBytes(
-              'audio_note',
-              bytes,
-              filename: 'audio_note.m4a',
-            );
-            widget.onFileChanged(multipartFile);
+            widget.onFileChanged(file, _filePath);
 
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -211,7 +200,7 @@ class _RecordCompState extends State<RecordComp> {
         }
       }
     } catch (e) {
-      widget.onFileChanged(null);
+      widget.onFileChanged(null, null);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error stopping recording: $e'),

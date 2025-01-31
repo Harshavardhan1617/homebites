@@ -1,9 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:home_bites/models/request_model.dart';
 import 'package:home_bites/presentation/screens/Forms/Components/record_comp.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart';
 
 class RequestsForm extends StatefulWidget {
   const RequestsForm({super.key});
@@ -17,10 +17,10 @@ class _RequestsFormState extends State<RequestsForm> {
   String _mealType = 'Breakfast';
   bool _isVegetarian = false;
   String _note = '';
-  MultipartFile? _audioFile;
+  File? _audioFile;
   bool _hasRecording = false;
 
-  void _handleAudioFileChanged(MultipartFile? file) {
+  void _handleAudioFileChanged(File? file, String? path) {
     setState(() {
       _audioFile = file;
       _hasRecording = file != null;
@@ -53,7 +53,7 @@ class _RequestsFormState extends State<RequestsForm> {
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Request submitted successfully')),
+          const SnackBar(content: Text('success')),
         );
         Navigator.pop(context);
       } catch (e) {
@@ -172,7 +172,7 @@ class _RequestsFormState extends State<RequestsForm> {
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const Text(
                             'Voice Note',
