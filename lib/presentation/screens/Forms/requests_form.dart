@@ -74,7 +74,7 @@ class _RequestsFormState extends State<RequestsForm> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(10.0),
             child: Form(
               key: _formKey,
               child: Column(
@@ -82,18 +82,11 @@ class _RequestsFormState extends State<RequestsForm> {
                 children: <Widget>[
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(10.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Request Details',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
+                          // const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
                             value: _mealType,
                             decoration: const InputDecoration(
@@ -116,11 +109,9 @@ class _RequestsFormState extends State<RequestsForm> {
                               });
                             },
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 10),
                           SwitchListTile(
                             title: const Text('Vegetarian'),
-                            subtitle:
-                                const Text('Request vegetarian options only'),
                             value: _isVegetarian,
                             onChanged: (value) {
                               setState(() {
@@ -132,21 +123,14 @@ class _RequestsFormState extends State<RequestsForm> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(10.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Additional Notes',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
+                          // const SizedBox(height: 16),
                           TextFormField(
                             decoration: const InputDecoration(
                               hintText: 'Add any special instructions...',
@@ -156,7 +140,7 @@ class _RequestsFormState extends State<RequestsForm> {
                                 vertical: 12,
                               ),
                             ),
-                            maxLines: 3,
+                            maxLines: 2,
                             onChanged: (value) {
                               setState(() {
                                 _note = value;
@@ -167,21 +151,21 @@ class _RequestsFormState extends State<RequestsForm> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(10.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Voice Note',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
+                          // const Text(
+                          //   'Voice Note',
+                          //   style: TextStyle(
+                          //     fontSize: 18,
+                          //     fontWeight: FontWeight.bold,
+                          //   ),
+                          // ),
+                          // const SizedBox(height: 16),
                           RecordComp(onFileChanged: _handleAudioFileChanged),
                           if (_hasRecording)
                             Padding(
