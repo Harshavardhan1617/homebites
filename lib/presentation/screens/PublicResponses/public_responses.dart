@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:home_bites/presentation/screens/Forms/responses_form.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
@@ -41,6 +42,19 @@ class _PublicResponsesState extends State<PublicResponses> {
           }
           return const Center(child: CircularProgressIndicator());
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return ResponsesForm(requestID: widget.requestID);
+              },
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
