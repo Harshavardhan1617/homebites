@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:home_bites/constants.dart';
+import 'package:home_bites/presentation/screens/PublicResponses/public_responses.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class ReqCard extends StatelessWidget {
@@ -60,6 +61,14 @@ class ReqCard extends StatelessWidget {
             const SizedBox(height: 10),
           ],
         ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PublicResponses(requestID: request.id),
+            ),
+          );
+        },
       ),
     );
   }
