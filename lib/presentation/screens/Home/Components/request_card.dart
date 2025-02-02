@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:home_bites/constants.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class ReqCard extends StatelessWidget {
@@ -58,7 +59,7 @@ class ReqCard extends StatelessWidget {
     if (userData['avatar'] != null &&
         userData['avatar'].toString().isNotEmpty) {
       avatarUrl =
-          'http://127.0.0.1:8090/api/files/${userData['collectionId']}/${userData['id']}/${userData['avatar']}';
+          '$kPocketbaseHostUrl/api/files/${userData['collectionId']}/${userData['id']}/${userData['avatar']}';
     }
 
     return Card(
