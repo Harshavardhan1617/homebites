@@ -72,7 +72,7 @@ class PocketBaseService {
   Future<ResultList<RecordModel>> getResponses(requestID) async {
     return await pb
         .collection('responses')
-        .getList(filter: "response_to = '$requestID'");
+        .getList(filter: "response_to = '$requestID'", sort: '-created');
   }
 
   Future<RecordModel> getRequest(String id) async {
