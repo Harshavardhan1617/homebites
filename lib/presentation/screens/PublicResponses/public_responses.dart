@@ -49,7 +49,7 @@ class _PublicResponsesState extends State<PublicResponses> {
             context,
             MaterialPageRoute(
               builder: (context) {
-                return ResponsesForm(requestID: widget.requestID);
+                return ResponsesFormScreen(requestID: widget.requestID);
               },
             ),
           );
