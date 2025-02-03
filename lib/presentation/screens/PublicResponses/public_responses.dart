@@ -21,7 +21,8 @@ class _PublicResponsesState extends State<PublicResponses> {
     super.initState();
     final PocketBaseService pbService =
         Provider.of<PocketBaseService>(context, listen: false);
-    _responsesStream = ResponsesStream(pb: pbService.pb);
+    _responsesStream =
+        ResponsesStream(pb: pbService.pb, responseTo: widget.requestID);
   }
 
   @override
