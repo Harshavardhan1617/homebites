@@ -52,18 +52,27 @@ class PocketBaseService {
   }
 
   // Request Methods
-  Future<RecordModel> createRequest(
-      {required RequestModel request, File? file}) async {
-    final bytes = await file!.readAsBytes();
-    return await pb
-        .collection('requests')
-        .create(body: request.toJson(), files: [
-      MultipartFile.fromBytes(
-        'voice_note',
-        bytes,
-        filename: 'voice_note.m4a',
-      )
-    ]);
+  Future<RecordModel> createRequest({
+    required RequestModel request,
+    File? file,
+  }) async {
+    if (file != null) {
+      final bytes = await file.readAsBytes();
+      return await pb.collection('requests').create(
+        body: request.toJson(),
+        files: [
+          MultipartFile.fromBytes(
+            'voice_note',
+            bytes,
+            filename: 'voice_note.m4a',
+          )
+        ],
+      );
+    }
+
+    return await pb.collection('requests').create(
+          body: request.toJson(),
+        );
   }
 
   Future<RecordModel> createResponse({required ResponseModel response}) async {
