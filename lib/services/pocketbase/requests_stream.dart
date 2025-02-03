@@ -38,13 +38,13 @@ class RequestsStreamController {
             case 'create':
               final newRecord = RecordModel.fromJson(e.record!.data);
               _currentRequests.add(newRecord);
-              _controller.add(_currentRequests);
+              _controller.add(_currentRequests.reversed.toList());
               break;
             case 'delete':
               final deletedRecordId = e.record!.id;
               _currentRequests
                   .removeWhere((record) => record.id == deletedRecordId);
-              _controller.add(_currentRequests);
+              _controller.add(_currentRequests.reversed.toList());
               break;
           }
         },

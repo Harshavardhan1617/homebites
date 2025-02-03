@@ -36,13 +36,13 @@ class ResponsesStream {
             case 'create':
               final newRecord = RecordModel.fromJson(e.record!.data);
               _currentResponses.add(newRecord);
-              _controller.add(_currentResponses);
+              _controller.add(_currentResponses.reversed.toList());
               break;
             case 'delete':
               final deletedRecordId = e.record!.id;
               _currentResponses
                   .removeWhere((record) => record.id == deletedRecordId);
-              _controller.add(_currentResponses);
+              _controller.add(_currentResponses.reversed.toList());
               break;
           }
         },
