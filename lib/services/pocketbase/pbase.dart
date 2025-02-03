@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:home_bites/models/response_model.dart';
 import 'package:http/http.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:home_bites/models/request_model.dart';
@@ -63,6 +64,11 @@ class PocketBaseService {
         filename: 'voice_note.m4a',
       )
     ]);
+  }
+
+  Future<RecordModel> createResponse({required ResponseModel response}) async {
+    print(response.toJson());
+    return await pb.collection('responses').create(body: response.toJson());
   }
 
   Future<List<RecordModel>> getRequests() async {
