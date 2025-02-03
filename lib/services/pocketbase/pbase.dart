@@ -84,6 +84,12 @@ class PocketBaseService {
     return await pb.collection('requests').getFullList();
   }
 
+  Future<ResultList<RecordModel>> getMyRequests(String myID) async {
+    return await pb
+        .collection('requests')
+        .getList(filter: "requested_user='$myID'", expand: 'requested_user');
+  }
+
   Future<ResultList<RecordModel>> getResponses(requestID) async {
     return await pb
         .collection('responses')

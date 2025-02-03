@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:home_bites/presentation/screens/Home/Tabs/requests_tab.dart';
-import 'package:home_bites/presentation/screens/Home/Tabs/responses_tab.dart';
+import 'package:home_bites/presentation/screens/Home/Tabs/my_requests_tab.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
             bottom: TabBar(
               tabs: [
                 Tab(text: 'Requests'),
-                Tab(text: 'Responses'),
+                Tab(text: 'My Requests'),
                 // Tab(text: 'Offerings'),
               ],
             ),
@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
           body: TabBarView(
             children: [
               RequestsTab(),
-              ResponsesTab()
+              MyRequestsTab()
               // ProfileTab(),
             ],
           ),
