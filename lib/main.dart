@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:home_bites/constants.dart';
+import 'package:home_bites/presentation/providers/vars_provider.dart';
 import 'package:home_bites/presentation/screens/Home/home_screen.dart';
 import 'package:home_bites/presentation/screens/Welcome/welcome_page.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
@@ -30,6 +31,7 @@ Future<void> main() async {
           create: (_) =>
               PocketBaseService(store: store, baseUrl: kPocketbaseHostUrl),
         ),
+        ChangeNotifierProvider(create: (_) => MyIntProvider()),
       ],
       child: MyApp(),
     ),

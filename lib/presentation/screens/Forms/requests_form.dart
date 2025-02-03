@@ -158,14 +158,6 @@ class _RequestsFormState extends State<RequestsForm> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // const Text(
-                          //   'Voice Note',
-                          //   style: TextStyle(
-                          //     fontSize: 18,
-                          //     fontWeight: FontWeight.bold,
-                          //   ),
-                          // ),
-                          // const SizedBox(height: 16),
                           RecordComp(onFileChanged: _handleAudioFileChanged),
                           if (_hasRecording)
                             Padding(
