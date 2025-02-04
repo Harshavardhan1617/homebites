@@ -7,7 +7,9 @@ import 'package:provider/provider.dart';
 
 class PublicResponses extends StatefulWidget {
   final String requestID;
-  const PublicResponses({super.key, required this.requestID});
+  final bool isMyRequest;
+  const PublicResponses(
+      {super.key, required this.requestID, this.isMyRequest = false});
 
   @override
   State<PublicResponses> createState() => _PublicResponsesState();
@@ -62,18 +64,20 @@ class _PublicResponsesState extends State<PublicResponses> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  ResponsesFormScreen(requestID: widget.requestID),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: !widget.isMyRequest
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ResponsesFormScreen(requestID: widget.requestID),
+                  ),
+                );
+              },
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

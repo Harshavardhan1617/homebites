@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:home_bites/constants.dart';
 import 'package:home_bites/presentation/screens/PublicResponses/public_responses.dart';
+import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:provider/provider.dart';
 
 class ReqCard extends StatelessWidget {
   final RecordModel request;
@@ -62,10 +64,20 @@ class ReqCard extends StatelessWidget {
           ],
         ),
         onTap: () {
+          bool isMyRequest = request.get('requested_user') ==
+              Provider.of<PocketBaseService>(context, listen: false)
+                  .pb
+                  .authStore
+                  .record!
+                  .id;
+
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PublicResponses(requestID: request.id),
+              builder: (context) => PublicResponses(
+                requestID: request.id,
+                isMyRequest: isMyRequest,
+              ),
             ),
           );
         },
