@@ -127,6 +127,12 @@ class _ResponsesFormState extends State<ResponsesForm> {
 
                   final data = ResponseModel(
                     responseTo: widget.requestID,
+                    responseBy:
+                        Provider.of<PocketBaseService>(context, listen: false)
+                            .pb
+                            .authStore
+                            .record!
+                            .id,
                     note: note,
                     price: price,
                   );
