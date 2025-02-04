@@ -1,5 +1,5 @@
+import 'dart:developer';
 import 'dart:io';
-
 import 'package:home_bites/models/response_model.dart';
 import 'package:http/http.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -75,9 +75,13 @@ class PocketBaseService {
         );
   }
 
-  Future<RecordModel> createResponse({required ResponseModel response}) async {
-    print(response.toJson());
-    return await pb.collection('responses').create(body: response.toJson());
+  Future<RecordModel?> createResponse({required ResponseModel response}) async {
+    try {
+      return await pb.collection('responses').create(body: response.toJson());
+    } catch (e) {
+      log('Error creating response: $e');
+      return null;
+    }
   }
 
   Future<List<RecordModel>> getRequests() async {
