@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:home_bites/models/recieved_response_model.dart';
 import 'package:home_bites/presentation/screens/Forms/responses_form.dart';
+import 'package:home_bites/presentation/widgets/response_card.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:home_bites/services/pocketbase/responses_stream.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -52,8 +54,11 @@ class _PublicResponsesState extends State<PublicResponses> {
               return ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
-                  final response = snapshot.data![index].data;
-                  return ListTile(title: Text(response['note']));
+                  List<ReceivedResponseModel> responses =
+                      snapshot.data!.map((record) {
+                    return ReceivedResponseModel.fromRecord(record);
+                  }).toList();
+                  return ResponseCard(response: responses[index]);
                 },
               );
             }

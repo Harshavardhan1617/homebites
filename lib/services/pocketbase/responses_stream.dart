@@ -21,6 +21,7 @@ class ResponsesStream {
       _currentResponses = await pb.collection('responses').getFullList(
             filter: "response_to='$responseTo'",
             sort: '-created',
+            expand: 'response_by',
           );
       _controller.add(_currentResponses);
     } catch (e) {
@@ -34,6 +35,7 @@ class ResponsesStream {
     try {
       _unsubscribe = await pb.collection('responses').subscribe(
         filter: "response_to='$responseTo'",
+        expand: 'response_by',
         '*',
         (e) {
           switch (e.action) {

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:home_bites/presentation/screens/Home/Components/request_card.dart';
+import 'package:home_bites/presentation/widgets/request_card.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:home_bites/services/pocketbase/requests_stream.dart';
 import 'package:pocketbase/pocketbase.dart';
