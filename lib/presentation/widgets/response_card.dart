@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:home_bites/constants.dart';
 import 'package:home_bites/models/recieved_response_model.dart';
+import 'package:home_bites/presentation/widgets/response_dashboard.dart';
+import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:provider/provider.dart';
 
 class ResponseCard extends StatelessWidget {
   final ReceivedResponseModel response;
@@ -32,6 +35,22 @@ class ResponseCard extends StatelessWidget {
           ],
         ),
         isThreeLine: true,
+        onTap: () {
+          bool isMyResponse = response.expand['id'] ==
+              Provider.of<PocketBaseService>(context, listen: false)
+                  .pb
+                  .authStore
+                  .record!
+                  .id;
+
+          isMyResponse
+              ? Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          ResponseDashboard(responseID: response.expand['id'])))
+              : print("not ur response");
+        },
       ),
     );
   }
