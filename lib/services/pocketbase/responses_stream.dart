@@ -9,7 +9,8 @@ class ResponsesStream {
   UnsubscribeFunc? _unsubscribe;
 
   ResponsesStream({required this.pb, required this.responseTo}) {
-    _controller = StreamController<List<RecordModel>>(onCancel: dispose);
+    _controller =
+        StreamController<List<RecordModel>>.broadcast(onCancel: dispose);
     _loadInitialData(responseTo);
     _subscribeToChanges(responseTo);
   }

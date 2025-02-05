@@ -19,12 +19,12 @@ class PublicResponses extends StatefulWidget {
 
 class _PublicResponsesState extends State<PublicResponses> {
   late ResponsesStream _responsesStream;
+  late PocketBaseService pbService;
 
   @override
   void initState() {
     super.initState();
-    final PocketBaseService pbService =
-        Provider.of<PocketBaseService>(context, listen: false);
+    pbService = Provider.of<PocketBaseService>(context, listen: false);
     _responsesStream =
         ResponsesStream(pb: pbService.pb, responseTo: widget.requestID);
   }
@@ -39,6 +39,12 @@ class _PublicResponsesState extends State<PublicResponses> {
     await _responsesStream.refreshData();
   }
 
+  bool checkIfResponded(List<ReceivedResponseModel> responses) {
+    return responses.any(
+      (response) => response.responseBy == pbService.pb.authStore.record!.id,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,39 +56,58 @@ class _PublicResponsesState extends State<PublicResponses> {
         child: StreamBuilder<List<RecordModel>>(
           stream: _responsesStream.responseStream,
           builder: (context, snapshot) {
-            if (snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (snapshot.hasData) {
+              List<ReceivedResponseModel> responses =
+                  snapshot.data!.map((record) {
+                return ReceivedResponseModel.fromRecord(record);
+              }).toList();
+
               return ListView.builder(
-                itemCount: snapshot.data!.length,
+                itemCount: responses.length,
                 itemBuilder: (context, index) {
-                  List<ReceivedResponseModel> responses =
-                      snapshot.data!.map((record) {
-                    return ReceivedResponseModel.fromRecord(record);
-                  }).toList();
                   return ResponseCard(response: responses[index]);
                 },
               );
             }
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
+
             return const Center(child: CircularProgressIndicator());
           },
         ),
       ),
-      floatingActionButton: !widget.isMyRequest
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ResponsesFormScreen(requestID: widget.requestID),
-                  ),
-                );
-              },
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: StreamBuilder<List<RecordModel>>(
+        stream: _responsesStream.responseStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<ReceivedResponseModel> responses =
+                snapshot.data!.map((record) {
+              return ReceivedResponseModel.fromRecord(record);
+            }).toList();
+
+            bool haveIResponded = checkIfResponded(responses);
+
+            if (!widget.isMyRequest && !haveIResponded) {
+              return FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ResponsesFormScreen(requestID: widget.requestID),
+                    ),
+                  );
+                },
+                child: const Icon(Icons.add),
+              );
+            }
+          }
+
+          return const SizedBox.shrink(); // Empty widget when button not needed
+        },
+      ),
     );
   }
 }
