@@ -94,6 +94,10 @@ class PocketBaseService {
         .getList(filter: "response_to = '$requestID'", sort: '-created');
   }
 
+  Future<RecordModel> getUniqueResponse(responseID) async {
+    return await pb.collection('responses').getOne(responseID);
+  }
+
   Future<RecordModel> getRequest(String id) async {
     return await pb.collection('requests').getOne(id);
   }
