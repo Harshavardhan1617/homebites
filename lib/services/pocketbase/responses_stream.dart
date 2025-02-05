@@ -24,6 +24,7 @@ class ResponsesStream {
             sort: '-created',
             expand: 'response_by',
           );
+      sortController(_currentResponses);
       _controller.add(_currentResponses);
     } catch (e) {
       print('Error loading initial data: $e');
@@ -31,8 +32,15 @@ class ResponsesStream {
     }
   }
 
+  void sortController(List<RecordModel> controller) {
+    _currentResponses.sort((a, b) {
+      if (a.get('response_by') == pb.authStore.record!.id) return -1;
+      if (b.get('response_by') == pb.authStore.record!.id) return 1;
+      return b.get('created').compareTo(a.get('created'));
+    });
+  }
+
   Future<void> _subscribeToChanges(String responseTo) async {
-    print(responseTo);
     try {
       _unsubscribe = await pb.collection('responses').subscribe(
         filter: "response_to='$responseTo'",
@@ -43,13 +51,17 @@ class ResponsesStream {
             case 'create':
               final newRecord = RecordModel.fromJson(e.record!.data);
               _currentResponses.add(newRecord);
-              _controller.add(_currentResponses.reversed.toList());
+
+              sortController(_currentResponses);
+
+              _controller.add(_currentResponses);
               break;
             case 'delete':
               final deletedRecordId = e.record!.id;
               _currentResponses
                   .removeWhere((record) => record.id == deletedRecordId);
-              _controller.add(_currentResponses.reversed.toList());
+              sortController(_currentResponses);
+              _controller.add(_currentResponses);
               break;
           }
         },
@@ -60,12 +72,10 @@ class ResponsesStream {
     }
   }
 
-  // Method to manually refresh the data
   Future<void> refreshData() async {
     await _loadInitialData(responseTo);
   }
 
-  // Don't forget to dispose
   void dispose() {
     _unsubscribe?.call();
     _controller.close();
