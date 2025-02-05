@@ -1,34 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:home_bites/constants.dart';
 import 'package:home_bites/models/recieved_response_model.dart';
 import 'package:home_bites/presentation/widgets/response_dashboard.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:provider/provider.dart';
 
-class ResponseCard extends StatelessWidget {
-  final ReceivedResponseModel response;
+class NotMyResponse extends StatelessWidget {
+  const NotMyResponse({
+    super.key,
+    required this.avatarUrl,
+    required this.response,
+  });
 
-  const ResponseCard({super.key, required this.response});
+  final String? avatarUrl;
+  final ReceivedResponseModel response;
 
   @override
   Widget build(BuildContext context) {
-    String? avatarUrl = (response.expand['avatar'] != null &&
-            response.expand['avatar'].toString().isNotEmpty)
-        ? '$kPocketbaseHostUrl/api/files/${response.expand['collectionId']}/${response.expand['id']}/${response.expand['avatar']}'
-        : null;
-    bool isMyResponse = widget.response.expand['id'] ==
-        Provider.of<PocketBaseService>(context, listen: false)
-            .pb
-            .authStore
-            .record
-            ?.id;
-
-    if (isMyResponse) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+          backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
           child: avatarUrl == null ? const Icon(Icons.person) : null,
         ),
         title: Text(response.expand['name']),
