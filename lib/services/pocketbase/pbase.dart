@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:home_bites/models/response_model.dart';
 import 'package:http/http.dart';
@@ -76,12 +75,7 @@ class PocketBaseService {
   }
 
   Future<RecordModel?> createResponse({required ResponseModel response}) async {
-    try {
-      return await pb.collection('responses').create(body: response.toJson());
-    } catch (e) {
-      log('Error creating response: $e');
-      return null;
-    }
+    return await pb.collection('responses').create(body: response.toJson());
   }
 
   Future<List<RecordModel>> getRequests() async {

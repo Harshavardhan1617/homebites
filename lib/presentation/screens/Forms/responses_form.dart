@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:home_bites/models/response_model.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
 
 class ResponsesFormScreen extends StatelessWidget {
@@ -61,7 +64,8 @@ class _ResponsesFormState extends State<ResponsesForm> {
         const SnackBar(content: Text('Response submitted successfully')),
       );
       Navigator.pop(context);
-    } catch (e) {
+    } on ClientException catch (e) {
+      log("Error submitting response: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to submit response')),
       );
