@@ -8,6 +8,7 @@ class ReceivedResponseModel {
   final String id;
   final String note;
   final String price;
+  final String status;
   final String responseBy;
   final String responseTo;
   final DateTime updated;
@@ -21,6 +22,7 @@ class ReceivedResponseModel {
     required this.id,
     required this.note,
     required this.price,
+    required this.status,
     required this.responseBy,
     required this.responseTo,
     required this.updated,
@@ -32,10 +34,11 @@ class ReceivedResponseModel {
       collectionId: record.get('collectionId'),
       collectionName: record.get('collectionName'),
       created: DateTime.parse(record.get('created')),
-      expand: record.get('expand')['response_by'] as Map<String, dynamic>,
+      expand: record.get('expand') as Map<String, dynamic>,
       id: record.id,
       note: record.get('note'),
       price: record.get('price'),
+      status: record.get('status'),
       responseBy: record.get('response_by'),
       responseTo: record.get('response_to'),
       updated: DateTime.parse(record.get('updated')),
