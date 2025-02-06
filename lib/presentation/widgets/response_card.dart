@@ -65,11 +65,39 @@ class _ResponseCardState extends State<ResponseCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          //TODO: Implement edit functionality here
+                        },
                         child: const Text('Edit'),
                       ),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          try {
+                            await Provider.of<PocketBaseService>(context,
+                                    listen: false)
+                                .deleteRecord(
+                                    collection: 'responses', id: response.id);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Response deleted successfully!')),
+                            );
+                          } on ClientException catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Error deleting response: ${e.response['message']}')),
+                            );
+                            print(
+                                'PocketBase ClientException: ${e.response['message']}, ${response.id}');
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('An error occurred: $e')),
+                            );
+                            print('An error occurred: $e');
+                          }
+                        },
                         child: const Text('Delete'),
                       ),
                     ],
