@@ -107,7 +107,8 @@ class PocketBaseService {
     return await pb.collection('requests').update(id, body: data);
   }
 
-  Future<void> deleteRequest(String id) async {
-    await pb.collection('requests').delete(id);
+  Future<void> deleteRecord(
+      {required String collection, required String id}) async {
+    await pb.collection(collection).delete(id);
   }
 }
