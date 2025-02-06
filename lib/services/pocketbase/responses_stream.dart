@@ -44,7 +44,7 @@ class ResponsesStream {
     try {
       _unsubscribe = await pb.collection('responses').subscribe(
         filter: "response_to='$responseTo'",
-        expand: 'response_by',
+        expand: 'response_by, response_to',
         '*',
         (e) {
           switch (e.action) {
