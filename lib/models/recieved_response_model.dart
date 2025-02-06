@@ -8,9 +8,10 @@ class ReceivedResponseModel {
   final String id;
   final String note;
   final String price;
-  final String status;
+  final String? status;
   final String responseBy;
   final String responseTo;
+  final String? exchange;
   final DateTime updated;
   final String voiceNote;
 
@@ -22,7 +23,8 @@ class ReceivedResponseModel {
     required this.id,
     required this.note,
     required this.price,
-    required this.status,
+    this.status,
+    this.exchange,
     required this.responseBy,
     required this.responseTo,
     required this.updated,
@@ -39,6 +41,7 @@ class ReceivedResponseModel {
       note: record.get('note'),
       price: record.get('price'),
       status: record.get('status'),
+      exchange: record.get('exchange_id'),
       responseBy: record.get('response_by'),
       responseTo: record.get('response_to'),
       updated: DateTime.parse(record.get('updated')),
