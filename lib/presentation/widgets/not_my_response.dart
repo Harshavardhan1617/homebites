@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:home_bites/models/recieved_response_model.dart';
-import 'package:home_bites/presentation/widgets/response_dashboard.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +21,6 @@ class NotMyResponse extends StatelessWidget {
 
     PocketBase pb = Provider.of<PocketBaseService>(context, listen: false).pb;
     String myID = pb.authStore.record!.id;
-    bool isMyResponse = responseByData['id'] == myID;
     String ogRequestOwner = responseToData['requested_user'];
     bool isResponseToMe = ogRequestOwner == myID;
     return Card(
@@ -41,20 +39,26 @@ class NotMyResponse extends StatelessWidget {
             Text('Note: ${response.note}'),
             const SizedBox(height: 4),
             Text('Price: ${response.price}'),
-            if (isResponseToMe) Text("you can accept")
+            if (isResponseToMe) _responseStatus(response),
           ],
         ),
         isThreeLine: true,
         onTap: () {
-          isMyResponse
-              ? Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          ResponseDashboard(responseID: responseByData['id'])))
-              : print("not ur response");
+          isResponseToMe
+              ? print("tap to respond")
+              : print("this response is not for u");
         },
       ),
+    );
+  }
+
+  Widget _responseStatus(ReceivedResponseModel response) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("status: ${response.status}"),
+        Text("exchange ID: ${response.exchange}"),
+      ],
     );
   }
 }

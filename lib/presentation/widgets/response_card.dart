@@ -27,12 +27,14 @@ class _ResponseCardState extends State<ResponseCard> {
             responseByData['avatar'].toString().isNotEmpty)
         ? '$kPocketbaseHostUrl/api/files/${responseByData['collectionId']}/${responseByData['id']}/${responseByData['avatar']}'
         : null;
-    PocketBase pb = Provider.of<PocketBaseService>(context, listen: false).pb;
+    PocketBaseService pbProvider =
+        Provider.of<PocketBaseService>(context, listen: false);
+    PocketBase pb = pbProvider.pb;
     String myID = pb.authStore.record!.id;
     bool isMyResponse = responseByData['id'] == myID;
     String ogRequestOwner = responseToData['requested_user'];
     bool isResponseToMe = ogRequestOwner == myID;
-    if (isMyResponse) {
+    if (isMyResponse || (!isMyResponse && isResponseToMe)) {
       return Card(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         child: ExpansionTile(
@@ -61,47 +63,9 @@ class _ResponseCardState extends State<ResponseCard> {
           },
           children: _isExpanded
               ? [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          //TODO: Implement edit functionality here
-                        },
-                        child: const Text('Edit'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            await Provider.of<PocketBaseService>(context,
-                                    listen: false)
-                                .deleteRecord(
-                                    collection: 'responses', id: response.id);
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Response deleted successfully!')),
-                            );
-                          } on ClientException catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Error deleting response: ${e.response['message']}')),
-                            );
-                            print(
-                                'PocketBase ClientException: ${e.response['message']}, ${response.id}');
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('An error occurred: $e')),
-                            );
-                            print('An error occurred: $e');
-                          }
-                        },
-                        child: const Text('Delete'),
-                      ),
-                    ],
-                  ),
+                  !isResponseToMe
+                      ? _EditAndDelete(response, pbProvider)
+                      : _acceptAndIgnore(response, pbProvider),
                   const SizedBox(height: 16),
                 ]
               : [],
@@ -109,5 +73,82 @@ class _ResponseCardState extends State<ResponseCard> {
       );
     }
     return NotMyResponse(avatarUrl: avatarUrl, response: response);
+  }
+
+  Widget _EditAndDelete(
+      ReceivedResponseModel response, PocketBaseService pbProvider) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            //TODO: Implement edit functionality here
+          },
+          child: const Text('Edit'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            try {
+              await pbProvider.deleteRecord(
+                  collection: 'responses', id: response.id);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Response deleted successfully!')),
+              );
+            } on ClientException catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(
+                        'Error deleting response: ${e.response['message']}')),
+              );
+              print(
+                  'PocketBase ClientException: ${e.response['message']}, ${response.id}');
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('An error occurred: $e')),
+              );
+              print('An error occurred: $e');
+            }
+          },
+          child: const Text('Delete'),
+        ),
+      ],
+    );
+  }
+
+  Widget _acceptAndIgnore(
+      ReceivedResponseModel response, PocketBaseService pbProvider) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        ElevatedButton(
+          onPressed: () {},
+          child: const Text('Accept'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            try {
+              await ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Response Ignored successfully!')),
+              );
+            } on ClientException catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(
+                        'Error Ignored response: ${e.response['message']}')),
+              );
+              print(
+                  'PocketBase ClientException: ${e.response['message']}, ${response.id}');
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('An error occurred: $e')),
+              );
+              print('An error occurred: $e');
+            }
+          },
+          child: const Text('Ignore'),
+        ),
+      ],
+    );
   }
 }
