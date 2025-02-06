@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:home_bites/models/recieved_response_model.dart';
 import 'package:home_bites/presentation/widgets/response_dashboard.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
 
 class NotMyResponse extends StatelessWidget {
@@ -16,6 +17,14 @@ class NotMyResponse extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic> responseToData = response.expand['response_to'];
+    final Map<String, dynamic> responseByData = response.expand['response_by'];
+
+    PocketBase pb = Provider.of<PocketBaseService>(context, listen: false).pb;
+    String myID = pb.authStore.record!.id;
+    bool isMyResponse = responseByData['id'] == myID;
+    String ogRequestOwner = responseToData['requested_user'];
+    bool isResponseToMe = ogRequestOwner == myID;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: ListTile(
@@ -23,32 +32,26 @@ class NotMyResponse extends StatelessWidget {
           backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
           child: avatarUrl == null ? const Icon(Icons.person) : null,
         ),
-        title: Text(response.expand['name']),
+        title: Text(responseByData['name']),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Mobile: ${response.expand['mobile_number']}'),
+            Text('Mobile: ${responseByData['mobile_number']}'),
             const SizedBox(height: 4),
             Text('Note: ${response.note}'),
             const SizedBox(height: 4),
             Text('Price: ${response.price}'),
+            if (isResponseToMe) Text("you can accept")
           ],
         ),
         isThreeLine: true,
         onTap: () {
-          bool isMyResponse = response.expand['id'] ==
-              Provider.of<PocketBaseService>(context, listen: false)
-                  .pb
-                  .authStore
-                  .record!
-                  .id;
-
           isMyResponse
               ? Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) =>
-                          ResponseDashboard(responseID: response.expand['id'])))
+                          ResponseDashboard(responseID: responseByData['id'])))
               : print("not ur response");
         },
       ),
