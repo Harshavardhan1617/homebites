@@ -138,13 +138,29 @@ class _ResponseCardState extends State<ResponseCard> {
 
             if (newExchange != null) {
               try {
-                await pbProvider.updateRecord(
-                  response.collectionName,
+                await pbProvider.pb
+                    .collection(
+                      response.collectionName.toString(),
+                    )
+                    .update(
                   response.id,
-                  {
+                      body: {
                     'status': 'accepted',
                     'exchange_id': newExchange.id,
-                    'response_to': response.responseTo,
+                      },
+                      expand: 'response_to',
+                    )
+                    .then((onValue) {
+                  final Map<String, dynamic> expandedResponseTo =
+                      onValue.get('expand')['response_to'];
+                  try {
+                    pbProvider.pb
+                        .collection(
+                            expandedResponseTo['collectionName'].toString())
+                        .update(
+                      expandedResponseTo['id'].toString(),
+                      body: {
+                        "exchange_id": onValue.get<String>('exchange_id'),
                   },
                 );
               } on ClientException catch (e) {
