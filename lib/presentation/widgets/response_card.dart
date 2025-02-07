@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:home_bites/constants.dart';
+import 'package:home_bites/models/exchange_model.dart';
 import 'package:home_bites/models/recieved_response_model.dart';
 import 'package:home_bites/presentation/widgets/not_my_response.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
@@ -34,6 +35,8 @@ class _ResponseCardState extends State<ResponseCard> {
     bool isMyResponse = responseByData['id'] == myID;
     String ogRequestOwner = responseToData['requested_user'];
     bool isResponseToMe = ogRequestOwner == myID;
+    bool isAccepted = response.status == 'accepted';
+    log("is my order accpeted? $isAccepted");
     if (isMyResponse || (!isMyResponse && isResponseToMe)) {
       return Card(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -53,7 +56,6 @@ class _ResponseCardState extends State<ResponseCard> {
               Text('Price: ${response.price}'),
               const SizedBox(height: 4),
               Text('Status: ${response.status}'),
-              if (isResponseToMe) Text("You can accpet"),
             ],
           ),
           onExpansionChanged: (bool expanded) {
@@ -65,8 +67,9 @@ class _ResponseCardState extends State<ResponseCard> {
               ? [
                   !isResponseToMe
                       ? _EditAndDelete(response, pbProvider)
-                      : _acceptAndIgnore(response, pbProvider),
-                  const SizedBox(height: 16),
+                      : !isAccepted
+                          ? _acceptAndIgnore(response, pbProvider)
+                          : Row(),
                 ]
               : [],
         ),
@@ -112,6 +115,7 @@ class _ResponseCardState extends State<ResponseCard> {
           },
           child: const Text('Delete'),
         ),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -122,7 +126,32 @@ class _ResponseCardState extends State<ResponseCard> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () async {
+            RecordModel? newExchange;
+            try {
+              newExchange = await pbProvider.createExchange(
+                ExchangeModel(isAccepted: true),
+              );
+            } on ClientException catch (e) {
+              log("error creating exchange $e ");
+            }
+
+            if (newExchange != null) {
+              try {
+                await pbProvider.updateRecord(
+                  response.collectionName,
+                  response.id,
+                  {
+                    'status': 'accepted',
+                    'exchange_id': newExchange.id,
+                    'response_to': response.responseTo,
+                  },
+                );
+              } on ClientException catch (e) {
+                log("error updating response with exchange id $e");
+              }
+            }
+          },
           child: const Text('Accept'),
         ),
         ElevatedButton(
