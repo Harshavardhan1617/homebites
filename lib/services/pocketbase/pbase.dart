@@ -107,9 +107,9 @@ class PocketBaseService {
     return await pb.collection('requests').getOne(id);
   }
 
-  Future<RecordModel> updateRequest(
-      String id, Map<String, dynamic> data) async {
-    return await pb.collection('requests').update(id, body: data);
+  Future<RecordModel> updateRecord(
+      String collectionName, String id, Map<String, dynamic> data) async {
+    return await pb.collection(collectionName).update(id, body: data);
   }
 
   Future<void> deleteRecord(
