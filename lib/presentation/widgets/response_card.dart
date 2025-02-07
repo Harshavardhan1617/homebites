@@ -173,8 +173,17 @@ class _ResponseCardState extends State<ResponseCard> {
         ElevatedButton(
           onPressed: () async {
             try {
-              await ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Response Ignored successfully!')),
+              await pbProvider.updateRecord(
+                'responses',
+                response.id,
+                {
+                  "status": "ignored",
+                },
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Response Ignored successfully!'),
+                ),
               );
             } on ClientException catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
