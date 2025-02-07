@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:home_bites/models/exchange_model.dart';
 import 'package:home_bites/models/response_model.dart';
 import 'package:http/http.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -72,6 +73,10 @@ class PocketBaseService {
     return await pb.collection('requests').create(
           body: request.toJson(),
         );
+  }
+
+  Future<RecordModel> createExchange(ExchangeModel exchangeData) async {
+    return await pb.collection('exchanges').create(body: exchangeData.data);
   }
 
   Future<RecordModel?> createResponse({required ResponseModel response}) async {
