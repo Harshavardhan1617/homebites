@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
+import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
 import 'package:home_bites/presentation/screens/Home/home_screen.dart';
 
@@ -20,17 +23,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final pocketBaseProvider =
         Provider.of<PocketBaseService>(context, listen: false);
-    await pocketBaseProvider.signIn(mobileNumber, password);
+
+    try {
+      pocketBaseProvider.pb.authStore.clear();
+      await pocketBaseProvider.signIn(mobileNumber, password);
+    } on ClientException catch (e) {
+      log(e.response["message"]);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed. Please try again.')),
+      );
+      passwordController.clear();
+      pocketBaseProvider.pb.authStore.clear();
+    }
 
     if (pocketBaseProvider.isAuthenticated) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    } else {
-      // Handle authentication failure
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed. Please try again.')),
       );
     }
   }
