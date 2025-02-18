@@ -43,22 +43,50 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: Provider.of<PocketBaseService>(context).checkAuthStatus(),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: Provider.of<PocketBaseService>(context, listen: false)
+          .checkAuthStatus(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const MaterialApp(
+            home: Scaffold(body: Center(child: CircularProgressIndicator())),
+          );
         }
-        final isAuthenticated = snapshot.data ?? false;
+
+        if (snapshot.hasError || snapshot.data == null) {
+          return const MaterialApp(home: _TimeoutWidget());
+        }
+
+        final bool isReachable = !snapshot.data!["serverTimeout"];
+        final bool isAuthenticated = snapshot.data!["isAuthenticated"];
+
         return MaterialApp(
           title: 'Home Bites',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),
-          home: isAuthenticated ? HomeScreen() : WelcomePage(),
+          home: isReachable
+              ? (isAuthenticated ? const HomeScreen() : const WelcomePage())
+              : const _TimeoutWidget(),
         );
       },
+    );
+  }
+}
+
+class _TimeoutWidget extends StatelessWidget {
+  const _TimeoutWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Text(
+          "Unable to reach server",
+          style: TextStyle(fontSize: 18, color: Colors.red),
+        ),
+      ),
     );
   }
 }

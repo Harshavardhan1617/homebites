@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 import 'package:home_bites/models/response_model.dart';
 import 'package:http/http.dart';
@@ -38,15 +40,28 @@ class PocketBaseService {
 
   bool get isAuthenticated => pb.authStore.isValid;
 
-  Future<bool> checkAuthStatus() async {
+  Future<Map<String, dynamic>> checkAuthStatus() async {
     try {
-      await pb
-          .collection('users')
-          .authRefresh(); // Refreshes and verifies token
-      return true;
+      await pb.collection('users').authRefresh().timeout(Duration(seconds: 5));
+      return {
+        "isAuthenticated": true,
+        "authRefresh": true,
+        "serverTimeout": false
+      };
+    } on TimeoutException catch (e) {
+      log(e.toString());
+      return {
+        "isAuthenticated": false,
+        "authRefresh": false,
+        "serverTimeout": true
+      };
     } catch (e) {
-      print('Auth Check Failed: $e');
-      return false;
+      log('Auth Check Failed: $e');
+      return {
+        "isAuthenticated": false,
+        "authRefresh": false,
+        "serverTimeout": false
+      };
     }
   }
 
