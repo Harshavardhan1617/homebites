@@ -6,6 +6,7 @@ import 'package:home_bites/presentation/widgets/not_my_response.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:provider/provider.dart';
+import 'dart:developer';
 
 class ResponseCard extends StatefulWidget {
   final ReceivedResponseModel response;
@@ -36,7 +37,7 @@ class _ResponseCardState extends State<ResponseCard> {
     String ogRequestOwner = responseToData['requested_user'];
     bool isResponseToMe = ogRequestOwner == myID;
     bool isAccepted = response.status == 'accepted';
-    log("is my order accpeted? $isAccepted");
+    log("is my order accepted? $isAccepted");
     if (isMyResponse || (!isMyResponse && isResponseToMe)) {
       return Card(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -69,7 +70,7 @@ class _ResponseCardState extends State<ResponseCard> {
                       ? _EditAndDelete(response, pbProvider)
                       : !isAccepted
                           ? _acceptAndIgnore(response, pbProvider)
-                          : Row(),
+                          : Container(),
                 ]
               : [],
         ),
@@ -115,7 +116,6 @@ class _ResponseCardState extends State<ResponseCard> {
           },
           child: const Text('Delete'),
         ),
-        const SizedBox(height: 16),
       ],
     );
   }
@@ -143,10 +143,10 @@ class _ResponseCardState extends State<ResponseCard> {
                       response.collectionName.toString(),
                     )
                     .update(
-                  response.id,
+                      response.id,
                       body: {
-                    'status': 'accepted',
-                    'exchange_id': newExchange.id,
+                        'status': 'accepted',
+                        'exchange_id': newExchange.id,
                       },
                       expand: 'response_to',
                     )
@@ -161,10 +161,14 @@ class _ResponseCardState extends State<ResponseCard> {
                       expandedResponseTo['id'].toString(),
                       body: {
                         "exchange_id": onValue.get<String>('exchange_id'),
-                  },
-                );
-              } on ClientException catch (e) {
-                log("error updating response with exchange id $e");
+                      },
+                    );
+                  } on ClientException catch (e) {
+                    log("error updating response with exchange id $e");
+                  }
+                });
+              } catch (e) {
+                log("error updating response: $e");
               }
             }
           },
