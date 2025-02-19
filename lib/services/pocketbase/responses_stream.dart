@@ -22,7 +22,7 @@ class ResponsesStream {
       _currentResponses = await pb.collection('responses').getFullList(
             filter: "response_to='$responseTo'",
             sort: '-created',
-            expand: 'response_by',
+            expand: 'response_by, response_to',
           );
       sortController(_currentResponses);
       _controller.add(_currentResponses);
@@ -44,7 +44,7 @@ class ResponsesStream {
     try {
       _unsubscribe = await pb.collection('responses').subscribe(
         filter: "response_to='$responseTo'",
-        expand: 'response_by',
+        expand: 'response_by, response_to',
         '*',
         (e) {
           switch (e.action) {
@@ -55,6 +55,16 @@ class ResponsesStream {
               sortController(_currentResponses);
 
               _controller.add(_currentResponses);
+              break;
+            case 'update':
+              final updatedRecord = RecordModel.fromJson(e.record!.data);
+              final index = _currentResponses
+                  .indexWhere((record) => record.id == updatedRecord.id);
+              if (index != -1) {
+                _currentResponses[index] = updatedRecord; // Update in place
+                sortController(_currentResponses);
+                _controller.add(_currentResponses);
+              }
               break;
             case 'delete':
               final deletedRecordId = e.record!.id;

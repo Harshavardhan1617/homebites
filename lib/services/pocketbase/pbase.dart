@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
+import 'package:home_bites/models/exchange_model.dart';
 import 'package:home_bites/models/response_model.dart';
 import 'package:http/http.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -89,6 +90,10 @@ class PocketBaseService {
         );
   }
 
+  Future<RecordModel> createExchange(ExchangeModel exchangeData) async {
+    return await pb.collection('exchanges').create(body: exchangeData.data);
+  }
+
   Future<RecordModel?> createResponse({required ResponseModel response}) async {
     return await pb.collection('responses').create(body: response.toJson());
   }
@@ -117,12 +122,13 @@ class PocketBaseService {
     return await pb.collection('requests').getOne(id);
   }
 
-  Future<RecordModel> updateRequest(
-      String id, Map<String, dynamic> data) async {
-    return await pb.collection('requests').update(id, body: data);
+  Future<RecordModel> updateRecord(
+      String collectionName, String id, Map<String, dynamic> data) async {
+    return await pb.collection(collectionName).update(id, body: data);
   }
 
-  Future<void> deleteRequest(String id) async {
-    await pb.collection('requests').delete(id);
+  Future<void> deleteRecord(
+      {required String collection, required String id}) async {
+    await pb.collection(collection).delete(id);
   }
 }
