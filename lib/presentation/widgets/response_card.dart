@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:home_bites/constants.dart';
 import 'package:home_bites/models/exchange_model.dart';
 import 'package:home_bites/models/recieved_response_model.dart';
+import 'package:home_bites/presentation/screens/Exchange/exchange_status.dart';
 import 'package:home_bites/presentation/widgets/not_my_response.dart';
 import 'package:home_bites/services/pocketbase/pbase.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -131,6 +132,11 @@ class _ResponseCardState extends State<ResponseCard> {
             try {
               newExchange = await pbProvider.createExchange(
                 ExchangeModel(isAccepted: true),
+              );
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ExchangeStatus(),
+                ),
               );
             } on ClientException catch (e) {
               log("error creating exchange $e ");
