@@ -22,8 +22,15 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider(create: (_) => PocketBaseService(store: store)),
-        ChangeNotifierProvider(create: (_) => MyIntProvider()),
+        Provider(
+          create: (_) => PocketBaseService(
+            store: store,
+            baseUrl: const String.fromEnvironment("network"),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => MyIntProvider(),
+        ),
       ],
       child: const MyApp(),
     ),
