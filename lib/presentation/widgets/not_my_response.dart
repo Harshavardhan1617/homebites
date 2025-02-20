@@ -57,7 +57,7 @@ class NotMyResponse extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("status: ${response.status}"),
-        Text("exchange ID: ${response.exchange}"),
+        Text("exchange ID: ${response.exchangeID}"),
       ],
     );
   }
