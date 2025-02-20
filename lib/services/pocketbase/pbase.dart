@@ -5,6 +5,7 @@ import 'package:home_bites/models/exchange_model.dart';
 import 'package:home_bites/models/response_model.dart';
 import 'package:http/http.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:pocketbase/src/client_exception.dart' as client_exception;
 import 'package:home_bites/models/request_model.dart';
 
 class PocketBaseService {
@@ -45,24 +46,28 @@ class PocketBaseService {
     try {
       await pb.collection('users').authRefresh().timeout(Duration(seconds: 5));
       return {
-        "isAuthenticated": true,
-        "authRefresh": true,
-        "serverTimeout": false
+        "statusCode": "",
+        "message": "auth success",
       };
     } on TimeoutException catch (e) {
       log(e.toString());
       return {
-        "isAuthenticated": false,
-        "authRefresh": false,
-        "serverTimeout": true
+        "statusCode": "999",
+        "message": "server timeout",
       };
     } catch (e) {
       log('Auth Check Failed: $e');
-      return {
-        "isAuthenticated": false,
-        "authRefresh": false,
-        "serverTimeout": false
-      };
+      if (e is client_exception.ClientException) {
+        final clientException = e;
+        final statusCode = clientException.statusCode.toString();
+        final message = clientException.response["message"].toString();
+        return {
+          "statusCode": statusCode,
+          "message": message,
+        };
+      } else {
+        return {"error": e.toString()};
+      }
     }
   }
 

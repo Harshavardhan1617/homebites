@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:home_bites/constants.dart';
 import 'package:home_bites/presentation/providers/vars_provider.dart';
 import 'package:home_bites/presentation/screens/Home/home_screen.dart';
 import 'package:home_bites/presentation/screens/Welcome/welcome_page.dart';
@@ -12,27 +11,21 @@ late String initialAuthData;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   final storage = FlutterSecureStorage();
-
-  // Prefetch secure data
   initialAuthData = await storage.read(key: "pb_auth") ?? '';
 
   final store = AsyncAuthStore(
-    save: (String data) async =>
-        await storage.write(key: "pb_auth", value: data),
+    save: (data) async => await storage.write(key: "pb_auth", value: data),
     initial: initialAuthData,
   );
 
   runApp(
     MultiProvider(
       providers: [
-        Provider(
-          create: (_) => PocketBaseService(store: store),
-        ),
+        Provider(create: (_) => PocketBaseService(store: store)),
         ChangeNotifierProvider(create: (_) => MyIntProvider()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
@@ -56,8 +49,8 @@ class MyApp extends StatelessWidget {
           return const MaterialApp(home: _TimeoutWidget());
         }
 
-        final bool isReachable = !snapshot.data!["serverTimeout"];
-        final bool isAuthenticated = snapshot.data!["isAuthenticated"];
+        final statusCode = snapshot.data!["statusCode"];
+        final message = snapshot.data!["message"];
 
         return MaterialApp(
           title: 'Home Bites',
@@ -65,12 +58,19 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),
-          home: isReachable
-              ? (isAuthenticated ? const HomeScreen() : const WelcomePage())
-              : const _TimeoutWidget(),
+          home: _getHomeScreen(statusCode, message),
         );
       },
     );
+  }
+
+  Widget _getHomeScreen(String statusCode, String message) {
+    if (statusCode == "999") return const _TimeoutWidget();
+    if (statusCode == "401") return WelcomePage();
+    if (statusCode == "0" || statusCode.startsWith("4")) {
+      return Scaffold(body: Center(child: Text(message)));
+    }
+    return HomeScreen();
   }
 }
 
