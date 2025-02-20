@@ -11,7 +11,7 @@ class PocketBaseService {
   final PocketBase pb;
 
   PocketBaseService(
-      {String baseUrl = 'http://127.0.0.1:8090', required AuthStore store})
+      {String baseUrl = 'http://192.168.1.9:8080', required AuthStore store})
       : pb = PocketBase(baseUrl, authStore: store);
 
   // Auth Methods

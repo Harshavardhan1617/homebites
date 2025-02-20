@@ -28,8 +28,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         Provider(
-          create: (_) =>
-              PocketBaseService(store: store, baseUrl: kPocketbaseHostUrl),
+          create: (_) => PocketBaseService(store: store),
         ),
         ChangeNotifierProvider(create: (_) => MyIntProvider()),
       ],
