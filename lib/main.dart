@@ -18,15 +18,18 @@ Future<void> main() async {
     save: (data) async => await storage.write(key: "pb_auth", value: data),
     initial: initialAuthData,
   );
-
+  const String URL = String.fromEnvironment("network");
   runApp(
     MultiProvider(
       providers: [
         Provider(
-          create: (_) => PocketBaseService(
-            store: store,
-            baseUrl: const String.fromEnvironment("network"),
-          ),
+          create: (_) {
+            if (URL != "") {
+              return PocketBaseService(store: store, baseUrl: URL);
+            } else {
+              return PocketBaseService(store: store);
+            }
+          },
         ),
         ChangeNotifierProvider(
           create: (_) => MyIntProvider(),
