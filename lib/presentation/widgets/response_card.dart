@@ -21,198 +21,207 @@ class ResponseCard extends StatefulWidget {
 class _ResponseCardState extends State<ResponseCard> {
   bool _isExpanded = false;
 
-  @override
-  Widget build(BuildContext context) {
-    final ReceivedResponseModel response = widget.response;
-    final Map<String, dynamic> responseToData = response.expand['response_to'];
-    final Map<String, dynamic> responseByData = response.expand['response_by'];
-    String? avatarUrl = (responseByData['avatar'] != null &&
-            responseByData['avatar'].toString().isNotEmpty)
-        ? '$kPocketbaseHostUrl/api/files/${responseByData['collectionId']}/${responseByData['id']}/${responseByData['avatar']}'
-        : null;
-    PocketBaseService pbProvider =
-        Provider.of<PocketBaseService>(context, listen: false);
-    PocketBase pb = pbProvider.pb;
-    String myID = pb.authStore.record!.id;
-    bool isMyResponse = responseByData['id'] == myID;
-    String ogRequestOwner = responseToData['requested_user'];
-    bool isResponseToMe = ogRequestOwner == myID;
-    bool isAccepted = response.status == 'accepted';
-    log("is my order accepted? $isAccepted");
-    if (isMyResponse || (!isMyResponse && isResponseToMe)) {
-      return Card(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        child: ExpansionTile(
-          leading: CircleAvatar(
-            backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-            child: avatarUrl == null ? const Icon(Icons.person) : null,
+  String? _getAvatarUrl(Map<String, dynamic> userData) {
+    if (userData['avatar'] != null &&
+        userData['avatar'].toString().isNotEmpty) {
+      return '$kPocketbaseHostUrl/api/files/${userData['collectionId']}/${userData['id']}/${userData['avatar']}';
+    }
+    return null;
+  }
+
+  Future<void> _handleAcceptResponse(
+      ReceivedResponseModel response, PocketBaseService pbProvider) async {
+    try {
+      final newExchange =
+          await pbProvider.createExchange(ExchangeModel(isAccepted: true));
+
+      await _updateResponseWithExchange(response, newExchange.id, pbProvider);
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ExchangeStatus(exchangeID: newExchange.id),
           ),
-          title: Text(responseByData['name']),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Mobile: ${responseByData['mobile_number']}'),
-              const SizedBox(height: 4),
-              Text('Note: ${response.note}'),
-              const SizedBox(height: 4),
-              Text('Price: ${response.price}'),
-              const SizedBox(height: 4),
-              Text('Status: ${response.status}'),
-            ],
+        );
+      }
+    } on ClientException catch (e) {
+      log("Error handling accept response: $e");
+      _showErrorSnackBar('Failed to accept response');
+    }
+  }
+
+  Future<void> _updateResponseWithExchange(
+    ReceivedResponseModel response,
+    String exchangeId,
+    PocketBaseService pbProvider,
+  ) async {
+    try {
+      final updatedResponse = await pbProvider.pb
+          .collection(response.collectionName.toString())
+          .update(
+            response.id,
+            body: {
+              'status': 'accepted',
+              'exchange_id': exchangeId,
+            },
+            expand: 'response_to',
+          );
+
+      final expandedResponseTo = updatedResponse.get('expand')['response_to'];
+      await pbProvider.pb
+          .collection(expandedResponseTo['collectionName'].toString())
+          .update(
+        expandedResponseTo['id'].toString(),
+        body: {"exchange_id": exchangeId},
+      );
+    } catch (e) {
+      log("Error updating response with exchange: $e");
+      throw Exception('Failed to update response');
+    }
+  }
+
+  Future<void> _handleIgnoreResponse(
+      ReceivedResponseModel response, PocketBaseService pbProvider) async {
+    try {
+      await pbProvider.updateRecord(
+        'responses',
+        response.id,
+        {"status": "ignored"},
+      );
+      if (mounted) {
+        _showSuccessSnackBar('Response ignored successfully');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Failed to ignore response');
+    }
+  }
+
+  Future<void> _handleDeleteResponse(
+      ReceivedResponseModel response, PocketBaseService pbProvider) async {
+    try {
+      await pbProvider.deleteRecord(collection: 'responses', id: response.id);
+      if (mounted) {
+        _showSuccessSnackBar('Response deleted successfully');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Failed to delete response');
+    }
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Widget _buildActionButtons(
+      ReceivedResponseModel response,
+      PocketBaseService pbProvider,
+      bool isResponseToMe,
+      bool isAccepted,
+      bool isMyResponse) {
+    if (!isResponseToMe && !isAccepted) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          ElevatedButton(
+            onPressed: () {},
+            child: const Text('Edit'),
           ),
-          onExpansionChanged: (bool expanded) {
-            setState(() {
-              _isExpanded = expanded;
-            });
-          },
-          children: _isExpanded
-              ? [
-                  !isResponseToMe
-                      ? _EditAndDelete(response, pbProvider)
-                      : !isAccepted
-                          ? _acceptAndIgnore(response, pbProvider)
-                          : Container(),
-                ]
-              : [],
-        ),
+          ElevatedButton(
+            onPressed: () => _handleDeleteResponse(response, pbProvider),
+            child: const Text('Delete'),
+          ),
+        ],
       );
     }
-    return NotMyResponse(avatarUrl: avatarUrl, response: response);
+
+    if (((isResponseToMe || isMyResponse) && isAccepted)) {
+      return TextButton(
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  ExchangeStatus(exchangeID: response.exchangeID),
+            ),
+          );
+        },
+        child: const Text("View Exchange Status"),
+      );
+    }
+
+    if (isResponseToMe && !isAccepted) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          ElevatedButton(
+            onPressed: () => _handleAcceptResponse(response, pbProvider),
+            child: const Text('Accept'),
+          ),
+          ElevatedButton(
+            onPressed: () => _handleIgnoreResponse(response, pbProvider),
+            child: const Text('Ignore'),
+          ),
+        ],
+      );
+    }
+
+    return Container();
   }
 
-  Widget _EditAndDelete(
-      ReceivedResponseModel response, PocketBaseService pbProvider) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        ElevatedButton(
-          onPressed: () {
-            //TODO: Implement edit functionality here
-          },
-          child: const Text('Edit'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            try {
-              await pbProvider.deleteRecord(
-                  collection: 'responses', id: response.id);
+  @override
+  Widget build(BuildContext context) {
+    final response = widget.response;
+    final responseToData = response.expand['response_to'];
+    final responseByData = response.expand['response_by'];
+    final avatarUrl = _getAvatarUrl(responseByData);
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Response deleted successfully!')),
-              );
-            } on ClientException catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(
-                        'Error deleting response: ${e.response['message']}')),
-              );
-              print(
-                  'PocketBase ClientException: ${e.response['message']}, ${response.id}');
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('An error occurred: $e')),
-              );
-              print('An error occurred: $e');
-            }
-          },
-          child: const Text('Delete'),
-        ),
-      ],
-    );
-  }
+    final pbProvider = Provider.of<PocketBaseService>(context, listen: false);
+    final myID = pbProvider.pb.authStore.record!.id;
 
-  Widget _acceptAndIgnore(
-      ReceivedResponseModel response, PocketBaseService pbProvider) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        ElevatedButton(
-          onPressed: () async {
-            RecordModel? newExchange;
-            try {
-              newExchange = await pbProvider.createExchange(
-                ExchangeModel(isAccepted: true),
-              );
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ExchangeStatus(),
-                ),
-              );
-            } on ClientException catch (e) {
-              log("error creating exchange $e ");
-            }
+    final isMyResponse = responseByData['id'] == myID;
+    final isResponseToMe = responseToData['requested_user'] == myID;
+    final isAccepted = response.status == 'accepted';
 
-            if (newExchange != null) {
-              try {
-                await pbProvider.pb
-                    .collection(
-                      response.collectionName.toString(),
-                    )
-                    .update(
-                      response.id,
-                      body: {
-                        'status': 'accepted',
-                        'exchange_id': newExchange.id,
-                      },
-                      expand: 'response_to',
-                    )
-                    .then((onValue) {
-                  final Map<String, dynamic> expandedResponseTo =
-                      onValue.get('expand')['response_to'];
-                  try {
-                    pbProvider.pb
-                        .collection(
-                            expandedResponseTo['collectionName'].toString())
-                        .update(
-                      expandedResponseTo['id'].toString(),
-                      body: {
-                        "exchange_id": onValue.get<String>('exchange_id'),
-                      },
-                    );
-                  } on ClientException catch (e) {
-                    log("error updating response with exchange id $e");
-                  }
-                });
-              } catch (e) {
-                log("error updating response: $e");
-              }
-            }
-          },
-          child: const Text('Accept'),
+    if (!isMyResponse && !isResponseToMe) {
+      return NotMyResponse(avatarUrl: avatarUrl, response: response);
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: ExpansionTile(
+        leading: CircleAvatar(
+          backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+          child: avatarUrl == null ? const Icon(Icons.person) : null,
         ),
-        ElevatedButton(
-          onPressed: () async {
-            try {
-              await pbProvider.updateRecord(
-                'responses',
-                response.id,
-                {
-                  "status": "ignored",
-                },
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Response Ignored successfully!'),
-                ),
-              );
-            } on ClientException catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(
-                        'Error Ignored response: ${e.response['message']}')),
-              );
-              print(
-                  'PocketBase ClientException: ${e.response['message']}, ${response.id}');
-            } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('An error occurred: $e')),
-              );
-              print('An error occurred: $e');
-            }
-          },
-          child: const Text('Ignore'),
+        title: Text(responseByData['name']),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Mobile: ${responseByData['mobile_number']}'),
+            const SizedBox(height: 4),
+            Text('Note: ${response.note}'),
+            const SizedBox(height: 4),
+            Text('Price: ${response.price}'),
+            const SizedBox(height: 4),
+          ],
         ),
-      ],
+        onExpansionChanged: (bool expanded) {
+          setState(() => _isExpanded = expanded);
+        },
+        children: _isExpanded
+            ? [
+                _buildActionButtons(response, pbProvider, isResponseToMe,
+                    isAccepted, isMyResponse)
+              ]
+            : [],
+      ),
     );
   }
 }
