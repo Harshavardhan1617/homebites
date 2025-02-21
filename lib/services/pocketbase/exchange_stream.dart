@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:pocketbase/pocketbase.dart';
 
-class ResponseDashboardStream {
+class ExchangeStream {
   final PocketBase pb;
   final String collectionName;
   final String recordId;
@@ -9,7 +9,7 @@ class ResponseDashboardStream {
   final StreamController<RecordModel> _controller =
       StreamController<RecordModel>.broadcast();
 
-  ResponseDashboardStream(
+  ExchangeStream(
       {required this.pb,
       required this.collectionName,
       required this.recordId}) {
