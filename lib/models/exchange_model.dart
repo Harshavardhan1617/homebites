@@ -1,9 +1,17 @@
 class ExchangeModel {
   Map<String, dynamic> data = {};
 
-  ExchangeModel({bool? isAccepted, bool? isConfirmed}) {
+  ExchangeModel(
+      {bool? isAccepted,
+      bool? isConfirmed,
+      bool? isCooking,
+      bool? isReady,
+      bool? isRecieved}) {
     data['isAccepted'] = isAccepted;
     data['isConfirmed'] = isConfirmed;
+    data['isCooking'] = isCooking;
+    data['isRecieved'] = isRecieved;
+    data['isReady'] = isReady;
   }
 
   ExchangeModel.fromMap(Map<String, dynamic> map) {
