@@ -31,7 +31,7 @@ class ExchangeStream {
 
   void _startListening() {
     pb.collection(collectionName).subscribe(recordId, (event) {
-      if (event.action == "update" || event.action == "create") {
+      if (event.action == "update") {
         final updatedRecord = RecordModel.fromJson(event.record!.data);
         _controller.sink.add(updatedRecord);
       }
